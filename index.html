@@ -182,7 +182,7 @@
         <input type="text" id="textToHide" placeholder="Text to hide" />
         <input type="password" id="password" placeholder="Password" />
         <button onclick="embedText()">Embed Text</button>
-        <p id="encryptedData"></p>
+        <p id="encryptedData" style="display: none"></p>
         <canvas id="canvas" style="display: none"></canvas>
         <img id="resultImage" style="display: none" />
         <button onclick="downloadImage()">Download Image</button>
@@ -433,6 +433,7 @@
         document.getElementById("encryptedData").scrollIntoView();
         // make larger
         document.getElementById("encryptedData").style.fontSize = "30px";
+        document.getElementById("encryptedData").style.display = "block";
         const reader = new FileReader();
         reader.onload = function (event) {
           const img = new Image();
