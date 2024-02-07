@@ -298,12 +298,17 @@
 
       async function getBalance(address) {
         // confirmed + unconfirmed
-        const url = `https://api.whatsonchain.com/v1/bsv/main/address/${address}/balance`;
+        const url = `https://api.whatsonchain.com/v1/bsv/main/address/${address}/unspent`;
         const response = await fetch(url);
         const data = await response.json();
-        const confirmed = data.confirmed;
-        const unconfirmed = data.unconfirmed;
-        const total = confirmed + unconfirmed;
+        let total = 0;
+        if (data.length === 0) {
+          document.getElementById("bsv").innerHTML = `Balance: 0 Satoshis`;
+          return;
+        }
+        for (let i = 0; i < data.length; i++) {
+          total += data[i].value;
+        }
         document.getElementById("bsv").innerHTML = `Balance: ${total} Satoshis`;
       }
       const getUtxos = async (address) => {
