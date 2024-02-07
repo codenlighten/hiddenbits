@@ -205,6 +205,8 @@
         <button id="pub" style="display: none" onclick="publish()">
           Publish to Blockchain
         </button>
+        <!-- start over -->
+        <button style="display: none" id="startOver">Start Over</button>
         <p id="encryptedData" style="display: none"></p>
         <canvas id="canvas" style="display: none"></canvas>
         <img id="resultImage" style="display: none" />
@@ -503,7 +505,17 @@
           // show download button and publish button
           document.getElementById("download").style.display = "";
           document.getElementById("pub").style.display = "";
+          // show start over button
+          document.getElementById("startOver").style.display = "";
+          // hide encrypt button and gen button
+          document.getElementById("encrypt").style.display = "none";
+          document.getElementById("gen").style.display = "none";
         };
+
+        // startover
+        document.getElementById("startOver").addEventListener("click", () => {
+          location.reload();
+        });
 
         reader.readAsDataURL(imageInput.files[0]);
         document.getElementById("status").innerText = "";
