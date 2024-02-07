@@ -175,14 +175,7 @@
       <h1 id="title">HiddenBits</h1>
       <img src="logo2.png" alt="" id="logo" />
       <h2>Steganography -easily embed text in a picutre and decode it back!</h2>
-      <div id="keys">
-        <p id="address"></p>
-        <p id="publicKey"></p>
-        <p id="privateKey" style="display: none"></p>
-        <p id="mnemonic" style="display: none"></p>
-      </div>
-      <button id="showKeys">Show Private Keys</button>
-      <button id="logout">Logout</button>
+
       <div id="encrypt">
         <h3>Embed Text</h3>
         <input type="file" id="imageUpload" />
@@ -215,7 +208,15 @@
       <p id="status"></p>
       <img id="txPic" style="display: none" />
       <p id="txidString"></p>
-      <p id="bsv"></p>
+      <div id="keys">
+        <p id="address"></p>
+        <p id="publicKey"></p>
+        <p id="privateKey" style="display: none"></p>
+        <p id="mnemonic" style="display: none"></p>
+        <p id="bsv"></p>
+      </div>
+      <button id="showKeys">Show Private Keys</button>
+      <button id="logout">Logout</button>
       <h3>Import Mnemonic</h3>
       <input type="text" id="mnemonicString" placeholder="Mnemonic" />
       <button onclick="importMnemonic()">Import Mnemonic</button>
