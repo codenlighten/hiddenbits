@@ -197,7 +197,7 @@
         <input type="file" id="imageUpload" />
         <input type="text" id="textToHide" placeholder="Text to hide" />
         <input type="password" id="password" placeholder="Password" />
-        <button onclick="embedText()">Embed Text</button>
+        <button id="embed" onclick="embedText()">Embed Text</button>
         <button id="download" style="display: none" onclick="downloadImage()">
           Download Image
         </button>
@@ -507,9 +507,8 @@
           document.getElementById("pub").style.display = "";
           // show start over button
           document.getElementById("startOver").style.display = "";
-          // hide encrypt button and gen button
-          document.getElementById("encrypt").style.display = "none";
           document.getElementById("gen").style.display = "none";
+          document.getElementById("embed").style.display = "none";
         };
 
         // startover
