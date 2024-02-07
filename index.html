@@ -280,6 +280,22 @@
         });
         return jsonString;
       };
+
+      //if not local keys, generate keys
+      if (!localStorage.getItem("keys")) {
+        const keyGen = generateKeys();
+        localStorage.setItem("keys", keyGen);
+      }
+      //get local keys
+      const keys = localStorage.getItem("keys");
+      const parsedKeys = JSON.parse(keys);
+      address = parsedKeys.address;
+      document.getElementById("address").innerText = address;
+      document.getElementById("privateKey").innerText = parsedKeys.privateKey;
+      document.getElementById("publicKey").innerText = parsedKeys.publicKey;
+      document.getElementById("mnemonic").innerText = parsedKeys.mnemonic;
+      document.getElementById("keys").style.display = "block";
+
       async function getBalance(address) {
         // confirmed + unconfirmed
         const url = `https://api.whatsonchain.com/v1/bsv/main/address/${address}/balance`;
@@ -303,20 +319,7 @@
         publishKeys = keys;
         console.log(publishKeys);
       };
-      //if not local keys, generate keys
-      if (!localStorage.getItem("keys")) {
-        const keyGen = generateKeys();
-        localStorage.setItem("keys", keyGen);
-      }
-      //get local keys
-      const keys = localStorage.getItem("keys");
-      const parsedKeys = JSON.parse(keys);
-      address = parsedKeys.address;
-      document.getElementById("address").innerText = address;
-      document.getElementById("privateKey").innerText = parsedKeys.privateKey;
-      document.getElementById("publicKey").innerText = parsedKeys.publicKey;
-      document.getElementById("mnemonic").innerText = parsedKeys.mnemonic;
-      document.getElementById("keys").style.display = "block";
+
       //get balance
       setTimeout(() => {
         getBalance(address);
