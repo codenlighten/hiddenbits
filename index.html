@@ -318,7 +318,9 @@
       document.getElementById("mnemonic").innerText = parsedKeys.mnemonic;
       document.getElementById("keys").style.display = "block";
       //get balance
-      getBalance(address);
+      setTimeout(() => {
+        getBalance(address);
+      }, 1000);
 
       const hexToAscii = (hex) => {
         return Buffer.from(hex, "hex").toString("ascii");
