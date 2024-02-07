@@ -147,6 +147,11 @@
         border-radius: 5px;
         word-wrap: break-word;
       }
+      /* center showMyKeys button */
+      #showMykeys {
+        display: block;
+        margin: auto;
+      }
       /* Responsive adjustments */
       @media (max-width: 768px) {
         body {
@@ -246,19 +251,21 @@
       <p id="status"></p>
       <img id="txPic" style="display: none" />
       <p id="txidString"></p>
-      <div id="keys">
+      <!-- show keys -->
+      <button id="showMykeys">Show My Bitcoin SV Keys</button>
+      <div style="display: none" id="keys">
         <h3>My Keys</h3>
         <p id="address"></p>
         <p id="publicKey"></p>
         <p id="privateKey" style="display: none"></p>
         <p id="mnemonic" style="display: none"></p>
         <p id="bsv"></p>
+        <button id="showKeys">Show Private Keys</button>
+        <button id="logout">Logout</button>
+        <h3>Import Mnemonic</h3>
+        <input type="text" id="mnemonicString" placeholder="Mnemonic" />
+        <button onclick="importMnemonic()">Import Mnemonic</button>
       </div>
-      <button id="showKeys">Show Private Keys</button>
-      <button id="logout">Logout</button>
-      <h3>Import Mnemonic</h3>
-      <input type="text" id="mnemonicString" placeholder="Mnemonic" />
-      <button onclick="importMnemonic()">Import Mnemonic</button>
     </div>
     <script>
       const Buffer = bsv.deps.Buffer;
@@ -302,7 +309,6 @@
       document.getElementById("privateKey").innerText = parsedKeys.privateKey;
       document.getElementById("publicKey").innerText = parsedKeys.publicKey;
       document.getElementById("mnemonic").innerText = parsedKeys.mnemonic;
-      document.getElementById("keys").style.display = "block";
 
       async function getBalance(address) {
         // confirmed + unconfirmed
@@ -1035,6 +1041,22 @@
           localStorage.removeItem("keys");
           localStorage.removeItem("undo");
           location.reload();
+        }
+      });
+
+      //show keys
+      let showKeys = false;
+      document.getElementById("showMykeys").addEventListener("click", () => {
+        if (showKeys) {
+          document.getElementById("keys").style.display = "none";
+          document.getElementById("showMykeys").innerText =
+            "Show My Bitcoin SV Keys";
+          showKeys = false;
+        } else {
+          document.getElementById("keys").style.display = "block";
+          document.getElementById("showMykeys").innerText =
+            "Hide My Bitcoin SV Keys";
+          showKeys = true;
         }
       });
     </script>
