@@ -925,9 +925,13 @@
       //if user embeds keys, publish to blockchain
       const publish = async () => {
         const bsvphotos = "https://bsvphotos.com";
-        if (!confirm("Coming soon! Go to BSVPhotos to publish?")) {
-          return;
-        }
+        alert("Coming soon!");
+        return;
+        // if (!confirm("Coming soon! Go to BSVPhotos to publish?")) {
+        //   return;
+        // }
+        //download first
+        downloadImage();
         //open bsvphotos in new tab
         window.open(bsvphotos, "_blank");
         return;
