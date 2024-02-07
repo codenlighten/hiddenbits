@@ -367,7 +367,7 @@
       function decodeText() {
         document.getElementById("status").innerText = "Please wait...";
         const imageInput = document.getElementById("imageToDecode");
-        const password = document.getElementById("password2").value;
+        let password = document.getElementById("password2").value;
         if (!imageInput.files[0] || !password) {
           alert("Please select an image to decode.");
           return;
@@ -402,7 +402,11 @@
                 text += String.fromCharCode(charCode);
               }
               console.log(text);
-              text = decryptData(text, password);
+              password.trim();
+              const passwordHash = bsv.crypto.Hash.sha256(
+                Buffer.from(password)
+              ).toString("hex");
+              text = decryptData(text, passwordHash);
               if (text === "") {
                 alert("Wrong password");
                 return;
@@ -467,7 +471,16 @@
           return;
         }
         text = text.trim();
-        text = encryptData(text, password);
+        password.trim();
+        const passwordHash = bsv.crypto.Hash.sha256(
+          Buffer.from(password)
+        ).toString("hex");
+        // if password includes characters other than letters and numbers
+        // if (password.match(/[^a-zA-Z0-9]/)) {
+        //   alert("Password can only include letters and numbers");
+        //   return;
+        // }
+        text = encryptData(text, passwordHash);
         document.getElementById("encryptedData").innerText =
           "Encrypted Data: " + text;
         //scroll to encrypted data
@@ -550,6 +563,10 @@
           return;
         }
         txid = txid.trim();
+        password.trim();
+        const passwordHash = bsv.crypto.Hash.sha256(
+          Buffer.from(password)
+        ).toString("hex");
         if (ordinalCheck) {
           if (txid.split("/").length === 1) {
             txid = txid + "/0";
@@ -566,7 +583,7 @@
           ctx.drawImage(image, 0, 0);
           const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
           let decodedText = extractTextFromImageData(imageData);
-          decodedText = decryptData(decodedText, password);
+          decodedText = decryptData(decodedText, passwordHash);
           if (decodedText === "") {
             alert("Wrong password");
             document.getElementById("status").innerText = "";
@@ -759,12 +776,16 @@
 
         const img = new Image();
         img.crossOrigin = "Anonymous";
-        const password = prompt("Enter password to encrypt keys");
+        let password = prompt("Enter password to encrypt keys");
         if (!password) {
           alert("Please enter password");
           return;
         }
-        const text = encryptData(keys, password);
+        password = password.trim();
+        const passwordHash = bsv.crypto.Hash.sha256(
+          Buffer.from(password)
+        ).toString("hex");
+        const text = encryptData(keys, passwordHash);
         img.onload = async function () {
           //image shrink to 1000 bytes
           const MAX_WIDTH = 250;
