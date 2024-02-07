@@ -143,36 +143,42 @@
         #main {
           padding: 10px;
         }
-      }
 
-      /* Additional styles for better readability and spacing */
-      p,
-      label {
-        margin-top: 10px;
-        color: #ccc; /* Lighter text for better readability */
-      }
+        /* Additional styles for better readability and spacing */
+        p,
+        label {
+          margin-top: 10px;
+          color: #ccc; /* Lighter text for better readability */
+        }
 
-      /* Highlighting active areas for interactivity */
-      input:focus,
-      button:focus {
-        outline: 2px solid #4d90fe; /* Blue outline for focus */
-      }
+        /* Highlighting active areas for interactivity */
+        input:focus,
+        button:focus {
+          outline: 2px solid #4d90fe; /* Blue outline for focus */
+        }
 
-      /* Styling for encrypted and decrypted data display */
-      #encryptedData,
-      #decodedText,
-      #decodedText2 {
-        background-color: #1e1e1e; /* Even darker background for data display */
-        color: #ffffff; /* White text for readability */
-        padding: 10px;
-        margin-top: 10px;
-        border-radius: 5px;
-        word-wrap: break-word;
-      }
+        /* Styling for encrypted and decrypted data display */
+        #encryptedData,
+        #decodedText,
+        #decodedText2 {
+          background-color: #1e1e1e; /* Even darker background for data display */
+          color: #ffffff; /* White text for readability */
+          padding: 10px;
+          margin-top: 10px;
+          border-radius: 5px;
+          word-wrap: break-word;
+        }
 
-      /* Enhance visibility for actions */
-      button#showKeys {
-        margin-top: 20px;
+        /* Enhance visibility for actions */
+        button#showKeys {
+          margin-top: 20px;
+        }
+        #encrypt,
+        #keys,
+        #decrypt,
+        #decryptTxid {
+          margin: 12px 0;
+        }
       }
     </style>
   </head>
@@ -191,9 +197,13 @@
         <p id="encryptedData" style="display: none"></p>
         <canvas id="canvas" style="display: none"></canvas>
         <img id="resultImage" style="display: none" />
-        <button onclick="downloadImage()">Download Image</button>
+        <button id="download" style="display: none" onclick="downloadImage()">
+          Download Image
+        </button>
         <button id="gen">Generate Stega Keys</button>
-        <button onclick="publish()">Publish to Blockchain</button>
+        <button id="pub" style="display: none" onclick="publish()">
+          Publish to Blockchain
+        </button>
       </div>
       <div id="decrypt">
         <h3>Decode Text</h3>
@@ -486,6 +496,9 @@
             resultImage.style.display = "block";
           };
           img.src = event.target.result;
+          // show download button and publish button
+          document.getElementById("download").style.display = "block";
+          document.getElementById("pub").style.display = "block";
         };
 
         reader.readAsDataURL(imageInput.files[0]);
