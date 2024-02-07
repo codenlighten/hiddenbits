@@ -762,6 +762,11 @@
           alert("Please enter mnemonic");
           return;
         }
+        if (localStorage.getItem("keys")) {
+          if (!confirm("Overwrite existing keys?")) {
+            return;
+          }
+        }
         const mnemonicObj = new bsv.Mnemonic(mnemonic);
         const xpriv = mnemonicObj.toHDPrivateKey();
         const fullPath = "m/44'/0'/0'/0/0";
