@@ -151,6 +151,10 @@
       #showMykeys {
         display: block;
         margin: auto;
+        background-color: #eb832e;
+      }
+      #showMykeys:hover {
+        background-color: #d17a2a;
       }
       /* Responsive adjustments */
       @media (max-width: 768px) {
@@ -252,7 +256,7 @@
       <img id="txPic" style="display: none" />
       <p id="txidString"></p>
       <!-- show keys -->
-      <button id="showMykeys">Show My Bitcoin SV Keys</button>
+      <button id="showMykeys">Show My Private Keys</button>
       <div style="display: none" id="keys">
         <h3>My Keys</h3>
         <p id="address"></p>
@@ -1049,13 +1053,11 @@
       document.getElementById("showMykeys").addEventListener("click", () => {
         if (showKeys) {
           document.getElementById("keys").style.display = "none";
-          document.getElementById("showMykeys").innerText =
-            "Show My Bitcoin SV Keys";
+          document.getElementById("showMykeys").innerText = "Show My Keys";
           showKeys = false;
         } else {
           document.getElementById("keys").style.display = "block";
-          document.getElementById("showMykeys").innerText =
-            "Hide My Bitcoin SV Keys";
+          document.getElementById("showMykeys").innerText = "Hide My Keys";
           showKeys = true;
         }
       });
