@@ -1,0 +1,907 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/3.1.2/rollups/aes.js"></script>
+    <script src="https://unpkg.com/bsv@1.5"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bsv@1.5.0/bsv-message.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bsv@1.5.0/bsv-mnemonic.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bsv@1.5.0/bsv-ecies.min.js"></script>
+    <title>
+      HiddenBits- Steganography -easily embed text in a picutre and decode it
+      back!
+    </title>
+    <style>
+      /* Basic Reset */
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        font-family: "Arial", sans-serif;
+        line-height: 1.6;
+        background-color: #f4f4f4;
+        padding: 20px;
+        color: #333;
+      }
+
+      h1,
+      h2,
+      h3 {
+        margin-bottom: 20px;
+      }
+
+      /* Main container for some padding around the app */
+      #main {
+        max-width: 800px;
+        margin: auto;
+        background: white;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      }
+
+      input[type="text"],
+      input[type="password"],
+      input[type="file"] {
+        width: 100%;
+        padding: 10px;
+        margin: 10px 0;
+        display: block;
+        border-radius: 5px;
+        border: 1px solid #ccc;
+      }
+
+      button {
+        background-color: #5cb85c;
+        color: white;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        margin-top: 10px;
+      }
+
+      button:hover {
+        background-color: #4cae4c;
+      }
+
+      /* Adjust button sizes for specific actions */
+      button#logout {
+        background-color: #d9534f;
+      }
+
+      button#logout:hover {
+        background-color: #c9302c;
+      }
+
+      /* Hide elements initially and only show when necessary */
+      #canvas,
+      #resultImage,
+      #keys,
+      #private {
+        display: none;
+      }
+
+      /* Responsive adjustments */
+      @media (max-width: 768px) {
+        body {
+          padding: 10px;
+        }
+
+        #main {
+          padding: 10px;
+        }
+      }
+
+      /* Additional styles for better readability and spacing */
+      p,
+      label {
+        margin-top: 10px;
+      }
+
+      /* Highlighting active areas for interactivity */
+      input:focus,
+      button:focus {
+        outline: 2px solid #4d90fe;
+      }
+
+      /* Styling for encrypted and decrypted data display */
+      #encryptedData,
+      #decodedText,
+      #decodedText2 {
+        background-color: #eef;
+        padding: 10px;
+        margin-top: 10px;
+        border-radius: 5px;
+        word-wrap: break-word;
+      }
+
+      /* Enhance visibility for actions */
+      button#showKeys {
+        margin-top: 20px;
+      }
+      #decrypt,
+      #encrypt {
+        margin-top: 20px;
+      }
+      #status {
+        margin-top: 20px;
+      }
+      #logo {
+        margin-top: 20px;
+        width: 100%;
+        max-width: 200px;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="main">
+      <h1>HiddenBits</h1>
+      <img src="logo.png" alt="" id="logo" />
+      <h2>Steganography -easily embed text in a picutre and decode it back!</h2>
+      <div id="keys">
+        <p id="address"></p>
+        <p id="publicKey"></p>
+        <p id="privateKey" style="display: none"></p>
+        <p id="mnemonic" style="display: none"></p>
+      </div>
+      <button id="showKeys">Show Private Keys</button>
+      <button id="logout">Logout</button>
+      <div id="encrypt">
+        <h3>Embed Text</h3>
+        <input type="file" id="imageUpload" />
+        <input type="text" id="textToHide" placeholder="Text to hide" />
+        <input type="password" id="password" placeholder="Password" />
+        <button onclick="embedText()">Embed Text</button>
+        <p id="encryptedData"></p>
+        <canvas id="canvas" style="display: none"></canvas>
+        <img id="resultImage" style="display: none" />
+        <button onclick="downloadImage()">Download Image</button>
+        <button id="logo">Generate Stega Keys</button>
+        <button onclick="publish()">Publish to Blockchain</button>
+      </div>
+      <div id="decrypt">
+        <h3>Decode Text</h3>
+        <input type="file" id="imageToDecode" />
+        <input type="password" id="password2" placeholder="Password" />
+        <button onclick="decodeText()">Decode Text</button>
+        <p id="decodedText" style="display: none"></p>
+      </div>
+      <!-- <h3>Decode Txid</h3>
+      <div id="decryptTxid">
+        <input type="text" id="txid" placeholder="Txid" />
+        <input type="password" id="password3" placeholder="Password" />
+        <button onclick="decodeTxid()">Decode Txid</button>
+        <p id="decodedText2"></p>
+        <input type="checkbox" id="ordinalCheck" />
+        <label for="ordinalCheck">Ordinal</label>
+      </div> -->
+      <p id="status"></p>
+      <img id="txPic" style="display: none" />
+      <p id="txidString"></p>
+      <p id="bsv"></p>
+      <h3>Import Mnemonic</h3>
+      <input type="text" id="mnemonicString" placeholder="Mnemonic" />
+      <button onclick="importMnemonic()">Import Mnemonic</button>
+    </div>
+    <script>
+      const Buffer = bsv.deps.Buffer;
+      let address = "";
+      let publishKeys = "";
+      //   const ordinalCheck = document.getElementById("ordinalCheck").checked;
+      //checked
+
+      const onesats = [];
+      const generateKeys = () => {
+        if (address && !confirm("Generate new keys?")) {
+          return;
+        }
+        const Mnemonic = bsv.Mnemonic;
+        const mnemonic = new Mnemonic();
+        const fullPath = "m/44'/0'/0'/0/0";
+        const xpriv = mnemonic.toHDPrivateKey(); // HD Private Key
+        const derivedPriv = xpriv.deriveChild(fullPath); // Derive the private key using the full path
+        const priv = derivedPriv.privateKey; // Get the actual private key
+        const pub = bsv.PublicKey.fromPrivateKey(priv); // Derive the public key from the private key
+        address = bsv.Address.fromPublicKey(pub).toString();
+        const jsonString = JSON.stringify({
+          address: address,
+          privateKey: priv.toString(),
+          publicKey: pub.toString(),
+          mnemonic: mnemonic.toString(),
+        });
+        return jsonString;
+      };
+      async function getBalance(address) {
+        // confirmed + unconfirmed
+        const url = `https://api.whatsonchain.com/v1/bsv/main/address/${address}/balance`;
+        const response = await fetch(url);
+        const data = await response.json();
+        const confirmed = data.confirmed;
+        const unconfirmed = data.unconfirmed;
+        const total = confirmed + unconfirmed;
+        document.getElementById("bsv").innerHTML = `Balance: ${total} Satoshis`;
+      }
+      const getUtxos = async (address) => {
+        const url = `https://api.whatsonchain.com/v1/bsv/main/address/${address}/unspent`;
+        const response = await fetch(url);
+        const data = await response.json();
+        return data;
+      };
+
+      const addKeys = () => {
+        const keys = generateKeys();
+        document.getElementById("textToHide").value = keys;
+        publishKeys = keys;
+        console.log(publishKeys);
+      };
+      //if not local keys, generate keys
+      if (!localStorage.getItem("keys")) {
+        const keyGen = generateKeys();
+        localStorage.setItem("keys", keyGen);
+      }
+      //get local keys
+      const keys = localStorage.getItem("keys");
+      const parsedKeys = JSON.parse(keys);
+      address = parsedKeys.address;
+      document.getElementById("address").innerText = address;
+      document.getElementById("privateKey").innerText = parsedKeys.privateKey;
+      document.getElementById("publicKey").innerText = parsedKeys.publicKey;
+      document.getElementById("mnemonic").innerText = parsedKeys.mnemonic;
+      document.getElementById("keys").style.display = "block";
+      //get balance
+      getBalance(address);
+
+      const hexToAscii = (hex) => {
+        return Buffer.from(hex, "hex").toString("ascii");
+      };
+      async function getTxInfo(txid) {
+        const imageUrl =
+          "https://plugins.whatsonchain.com/api/plugin/main/" + txid;
+
+        return new Promise((resolve, reject) => {
+          const image = new Image();
+          image.onload = () => resolve(image);
+          image.onerror = () => reject(new Error("Failed to load image"));
+          image.crossOrigin = "Anonymous"; // To avoid CORS issues
+          image.src = imageUrl;
+          document.getElementById("txPic").src = imageUrl;
+          document.getElementById("txPic").style.display = "block";
+          //remove /0 if on end of txid
+          if (txid.split("/").length === 2) {
+            txid = txid.split("/")[0];
+          }
+          document.getElementById(
+            "txidString"
+          ).innerHTML = `Txid: <a href="https://whatsonchain.com/tx/${txid}" target="_blank">${txid}</a>`;
+        });
+      }
+
+      function encryptData(data, password) {
+        var encrypted = CryptoJS.AES.encrypt(data, password);
+        return encrypted.toString();
+      }
+      function decryptData(data, password) {
+        var decrypted = CryptoJS.AES.decrypt(data, password);
+        return decrypted.toString(CryptoJS.enc.Utf8);
+      }
+
+      function decodeText() {
+        document.getElementById("status").innerText = "Please wait...";
+        const imageInput = document.getElementById("imageToDecode");
+        const password = document.getElementById("password2").value;
+        if (!imageInput.files[0] || !password) {
+          alert("Please select an image to decode.");
+          return;
+        }
+        try {
+          const reader = new FileReader();
+          reader.onload = function (event) {
+            const img = new Image();
+            img.onload = async function () {
+              const canvas = document.getElementById("canvas");
+              canvas.width = img.width;
+              canvas.height = img.height;
+
+              const ctx = canvas.getContext("2d", { willReadFrequently: true });
+              ctx.drawImage(img, 0, 0);
+
+              const imageData = ctx.getImageData(
+                0,
+                0,
+                canvas.width,
+                canvas.height
+              );
+              const data = imageData.data;
+              let text = "";
+
+              for (let i = 0; i < data.length; i += 4 * 8) {
+                let charCode = 0;
+                for (let j = 0; j < 8; j++) {
+                  charCode |= (data[i + j * 4 + 2] & 1) << j;
+                }
+                if (charCode === 0) break; // Null character signifies end of text
+                text += String.fromCharCode(charCode);
+              }
+              console.log(text);
+              text = decryptData(text, password);
+              if (text === "") {
+                alert("Wrong password");
+                return;
+              }
+              document.getElementById("decodedText").innerText =
+                "Decoded Text: " + text;
+              // scroll to decoded text
+              document.getElementById("decodedText").scrollIntoView();
+              // make larger
+              document.getElementById("decodedText").style.fontSize = "30px";
+              document.getElementById("decodedText").style.display = "block";
+              // check if json
+              try {
+                const parsedJSON = JSON.parse(text);
+                const addy = parsedJSON.address;
+                const privateKey = parsedJSON.privateKey;
+                const publicKey = parsedJSON.publicKey;
+                const mnemonic = parsedJSON.mnemonic;
+                if (addy) {
+                  console.log(addy);
+                  // await getBalance(addy);
+                  await getBalance(addy);
+                }
+                //add to keys
+                document.getElementById("address").innerText = addy;
+                document.getElementById("privateKey").innerText = privateKey;
+                document.getElementById("publicKey").innerText = publicKey;
+                document.getElementById("mnemonic").innerText = mnemonic;
+                document.getElementById("keys").style.display = "block";
+
+                document.getElementById("status").innerText = "";
+                if (!confirm("add keys to local storage?")) {
+                  return;
+                }
+                const undo = JSON.parse(localStorage.getItem("keys"));
+                localStorage.setItem("undo", JSON.stringify(undo));
+                localStorage.setItem("keys", text);
+                alert("keys added to local storage");
+                location.reload();
+              } catch (error) {
+                console.log(error);
+                document.getElementById("status").innerText = "";
+              }
+            };
+
+            img.src = event.target.result;
+          };
+          reader.readAsDataURL(imageInput.files[0]);
+          document.getElementById("status").innerText = "";
+        } catch (error) {
+          console.log(error);
+          document.getElementById("status").innerText = "";
+        }
+      }
+      function embedText() {
+        document.getElementById("status").innerText = "Please wait...";
+        const imageInput = document.getElementById("imageUpload");
+        let text = document.getElementById("textToHide").value;
+        const password = document.getElementById("password").value;
+        if (!imageInput.files[0] || !text || !password) {
+          alert("Please select an image and enter text to hide.");
+          return;
+        }
+        text = text.trim();
+        text = encryptData(text, password);
+        document.getElementById("encryptedData").innerText =
+          "Encrypted Data: " + text;
+        //scroll to encrypted data
+        document.getElementById("encryptedData").scrollIntoView();
+        // make larger
+        document.getElementById("encryptedData").style.fontSize = "30px";
+        const reader = new FileReader();
+        reader.onload = function (event) {
+          const img = new Image();
+          img.onload = function () {
+            const canvas = document.getElementById("canvas");
+            canvas.width = img.width;
+            canvas.height = img.height;
+            //shrink image to 1000 bytes
+            const MAX_WIDTH = 250;
+            const MAX_HEIGHT = 250;
+            let width = img.width;
+            let height = img.height;
+            const ctx = canvas.getContext("2d", { willReadFrequently: true });
+            ctx.drawImage(img, 0, 0);
+
+            const imageData = ctx.getImageData(
+              0,
+              0,
+              canvas.width,
+              canvas.height
+            );
+            const data = imageData.data;
+
+            for (let i = 0; i < text.length; i++) {
+              // Get the ASCII code of each character
+              const ascii = text.charCodeAt(i);
+              // Embed each character in the last 8 pixels
+              for (let j = 0; j < 8; j++) {
+                // Shift and get each bit of the character
+                const bit = (ascii >> j) & 1;
+                // Embed the bit in the least significant bit of the blue channel
+                data[(i * 8 + j) * 4 + 2] =
+                  (data[(i * 8 + j) * 4 + 2] & ~1) | bit;
+              }
+            }
+
+            // Update the canvas with the modified image
+            ctx.putImageData(imageData, 0, 0);
+
+            // Display the result
+            const resultImage = document.getElementById("resultImage");
+            resultImage.src = canvas.toDataURL("image/png");
+            resultImage.style.display = "block";
+          };
+          img.src = event.target.result;
+        };
+
+        reader.readAsDataURL(imageInput.files[0]);
+        document.getElementById("status").innerText = "";
+      }
+
+      async function decodeTxid() {
+        document.getElementById("status").innerText = "Please wait...";
+        let txid = document.getElementById("txid").value;
+        //check for ordinal
+        const ordinalCheck = document.getElementById("ordinalCheck").checked;
+
+        const password = document.getElementById("password3").value;
+        if (!txid || !password) {
+          alert("Please enter txid and password.");
+          return;
+        }
+        txid = txid.trim();
+        if (ordinalCheck) {
+          if (txid.split("/").length === 1) {
+            txid = txid + "/0";
+          }
+        }
+        try {
+          const image = await getTxInfo(txid);
+
+          console.log(image);
+          const canvas = document.getElementById("canvas");
+          canvas.width = image.width;
+          canvas.height = image.height;
+          const ctx = canvas.getContext("2d");
+          ctx.drawImage(image, 0, 0);
+          const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+          let decodedText = extractTextFromImageData(imageData);
+          decodedText = decryptData(decodedText, password);
+          if (decodedText === "") {
+            alert("Wrong password");
+            document.getElementById("status").innerText = "";
+            return;
+          }
+          document.getElementById("decodedText2").innerText =
+            "Decoded Text: " + decodedText;
+          // scroll to decoded text
+          document.getElementById("decodedText2").scrollIntoView();
+          // make larger
+          document.getElementById("decodedText2").style.fontSize = "30px";
+          document.getElementById("status").innerText = "";
+          // check if json
+          try {
+            const parsedJSON = JSON.parse(decodedText);
+            const addy = parsedJSON.address;
+            const privateKey = parsedJSON.privateKey;
+            const publicKey = parsedJSON.publicKey;
+            const mnemonic = parsedJSON.mnemonic;
+            if (addy) {
+              console.log(addy);
+              // await getBalance(addy);
+              await getBalance(addy);
+            }
+            //add to keys
+            document.getElementById("address").innerText = addy;
+            document.getElementById("privateKey").innerText = privateKey;
+            document.getElementById("publicKey").innerText = publicKey;
+            document.getElementById("mnemonic").innerText = mnemonic;
+            document.getElementById("keys").style.display = "block";
+            document.getElementById("private").style.display = "none";
+            document.getElementById("status").innerText = "";
+            if (!confirm("add keys to local storage?")) {
+              return;
+            }
+            const undo = JSON.parse(localStorage.getItem("keys"));
+            localStorage.setItem("undo", JSON.stringify(undo));
+            localStorage.setItem("keys", decodedText);
+            alert("keys added to local storage");
+            location.reload();
+          } catch (error) {
+            console.log(error);
+            document.getElementById("status").innerText = "";
+          }
+        } catch (error) {
+          console.log(error);
+          document.getElementById("status").innerText = "";
+        }
+      }
+
+      function extractTextFromImageData(imageData) {
+        const data = imageData.data;
+        let text = "";
+        for (let i = 0; i < data.length; i += 4 * 8) {
+          let charCode = 0;
+          for (let j = 0; j < 8; j++) {
+            charCode |= (data[i + j * 4 + 2] & 1) << j;
+          }
+          if (charCode === 0) break; // Null character signifies end of text
+          text += String.fromCharCode(charCode);
+        }
+        return text;
+      }
+
+      function downloadImage() {
+        const canvas = document.getElementById("canvas");
+        const image = canvas
+          .toDataURL("image/png")
+          .replace("image/png", "image/octet-stream");
+
+        // Create a temporary link to trigger the download
+        const link = document.createElement("a");
+        if (!address) {
+          generateKeys();
+        }
+        link.download = `${address}.png`;
+        link.href = image;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      }
+
+      function showEncrypt() {
+        document.getElementById("encrypt").style.display = "block";
+        document.getElementById("decrypt").style.display = "none";
+        document.getElementById("decryptTxid").style.display = "none";
+      }
+      function showDecrypt() {
+        document.getElementById("encrypt").style.display = "none";
+        document.getElementById("decrypt").style.display = "block";
+        document.getElementById("decryptTxid").style.display = "none";
+      }
+      function showDecryptTxid() {
+        // alert("coming soon");
+        // return;
+        document.getElementById("encrypt").style.display = "none";
+        document.getElementById("decrypt").style.display = "none";
+        document.getElementById("decryptTxid").style.display = "block";
+        document.getElementById("ordinalCheck").checked = true;
+      }
+      // check url params for txid
+      const urlParams = new URLSearchParams(window.location.search);
+      const txid = urlParams.get("txid");
+
+      const keysUrl = urlParams.get("keys");
+      if (keysUrl) {
+        //open encrypt
+        showEncrypt();
+        // generate keys
+        addKeys();
+        //highlight password box
+        document.getElementById("password").focus();
+        // remove keys from url
+        // remove after ?
+        let url = window.location.href;
+        url = url.split("?")[0];
+        window.history.pushState({}, document.title, url);
+      }
+      const password = urlParams.get("password");
+      if (txid && password) {
+        //open decrypt
+        showDecryptTxid();
+        //set txid
+        document.getElementById("txid").value = txid;
+        //set password
+        document.getElementById("password3").value = password;
+        //decode txid
+        // check for ordinal
+        const ordinalCheck = document.getElementById("ordinalCheck").checked;
+        decodeTxid();
+        //remove txid from url
+        let url = window.location.href;
+        url = url.split("?")[0];
+        window.history.pushState({}, document.title, url);
+      }
+      if (txid && !password) {
+        //open decrypt
+        showDecryptTxid();
+        //set txid
+        document.getElementById("txid").value = txid;
+        //highlight password box
+        document.getElementById("password3").focus();
+        //remove txid from url
+        let url = window.location.href;
+        url = url.split("?")[0];
+        window.history.pushState({}, document.title, url);
+      }
+
+      //import mnemonic
+      const importMnemonic = () => {
+        const mnemonic = document.getElementById("mnemonicString").value;
+        if (!mnemonic) {
+          alert("Please enter mnemonic");
+          return;
+        }
+        const mnemonicObj = new bsv.Mnemonic(mnemonic);
+        const xpriv = mnemonicObj.toHDPrivateKey();
+        const fullPath = "m/44'/0'/0'/0/0";
+        const derivedPriv = xpriv.deriveChild(fullPath); // Derive the private key using the full path
+        const priv = derivedPriv.privateKey; // Get the actual private key
+        const pub = bsv.PublicKey.fromPrivateKey(priv); // Derive the public key from the private key
+        address = bsv.Address.fromPublicKey(pub).toString();
+        const jsonString = JSON.stringify({
+          address: address,
+          privateKey: priv.toString(),
+          publicKey: pub.toString(),
+          mnemonic: mnemonic.toString(),
+        });
+        //add to keys
+        localStorage.setItem("keys", jsonString);
+        document.getElementById("address").innerText = address;
+        document.getElementById("privateKey").innerText = priv.toString();
+        document.getElementById("publicKey").innerText = pub.toString();
+        document.getElementById("mnemonic").innerText = mnemonic.toString();
+        document.getElementById("keys").style.display = "block";
+        //get balance
+        getBalance(address);
+      };
+
+      // generate embedded logo image with new keys
+      const generateLogo = () => {
+        const keys = generateKeys();
+        publishKeys = keys;
+        //get canvas
+        const canvas = document.getElementById("canvas");
+        const ctx = canvas.getContext("2d");
+        //draw image
+        const image =
+          "https://plugins.whatsonchain.com/api/plugin/main/efc55f1db5b7012d7299d87b9a967c12905953a80226869574027bd5bbce0272";
+
+        const img = new Image();
+        img.crossOrigin = "Anonymous";
+        const password = prompt("Enter password to encrypt keys");
+        if (!password) {
+          alert("Please enter password");
+          return;
+        }
+        const text = encryptData(keys, password);
+        img.onload = async function () {
+          //image shrink to 1000 bytes
+          const MAX_WIDTH = 250;
+          const MAX_HEIGHT = 250;
+          let width = img.width;
+          let height = img.height;
+
+          if (width > height) {
+            if (width > MAX_WIDTH) {
+              height *= MAX_WIDTH / width;
+              width = MAX_WIDTH;
+            }
+          } else {
+            if (height > MAX_HEIGHT) {
+              width *= MAX_HEIGHT / height;
+              height = MAX_HEIGHT;
+            }
+          }
+
+          canvas.width = width;
+          canvas.height = height;
+          ctx.drawImage(img, 0, 0, width, height);
+          //get image data
+          const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+          const data = imageData.data;
+          //embed text
+
+          for (let i = 0; i < text.length; i++) {
+            // Get the ASCII code of each character
+            const ascii = text.charCodeAt(i);
+            // Embed each character in the last 8 pixels
+            for (let j = 0; j < 8; j++) {
+              // Shift and get each bit of the character
+              const bit = (ascii >> j) & 1;
+              // Embed the bit in the least significant bit of the blue channel
+              data[(i * 8 + j) * 4 + 2] =
+                (data[(i * 8 + j) * 4 + 2] & ~1) | bit;
+            }
+          }
+          // Update the canvas with the modified image
+          ctx.putImageData(imageData, 0, 0);
+          // Display the result
+          const resultImage = document.getElementById("resultImage");
+          resultImage.src = canvas.toDataURL("image/png");
+          resultImage.style.display = "block";
+          //download image
+          const image = canvas
+            .toDataURL("image/png")
+            .replace("image/png", "image/octet-stream");
+          // Create a temporary link to trigger the download
+          const link = document.createElement("a");
+          if (!address) {
+            generateKeys();
+          }
+          link.download = `${address}.png`;
+          link.href = image;
+          document.body.appendChild(link);
+          //   link.click();
+          //   document.body.removeChild(link);
+          //add result image buffer array to txid string
+          const byteArray = new Uint8Array(
+            atob(canvas.toDataURL("image/png").split(",")[1])
+              .split("")
+              .map(function (c) {
+                return c.charCodeAt(0);
+              })
+          );
+          //   const txid = await ordinal(byteArray, JSON.parse(keys));
+
+          //   document.getElementById(
+          //     "status"
+          //   ).innerHTML = `Txid: <a href="https://whatsonchain.com/tx/${txid}" target="_blank">${txid}</a>`;
+          //add to txid string
+        };
+        img.src = image;
+      };
+      document.getElementById("logo").addEventListener("click", generateLogo);
+      //   let ordFund = false;
+      //   const ordinal = async (imageData, fundKeys) => {
+      //     console.log(publishKeys, "publishKeys");
+      //     console.log(fundKeys, "fundkeys");
+      //     const address = JSON.parse(fundKeys).address;
+      //     console.log(address, "address");
+      //     const priv = JSON.parse(fundKeys).privateKey;
+      //     let receiveKeysPrivateKey;
+      //     if (ordFund) {
+      //       alert(`make sure you have enough funds in ${address} to cover fees`);
+      //     }
+      //     if (publishKeys) {
+      //       receiveKeysPrivateKey = bsv.PrivateKey.fromWIF(
+      //         JSON.parse(publishKeys).privateKey
+      //       );
+      //       console.log(publishKeys, "publishKeys");
+      //     } else {
+      //       receiveKeysPrivateKey = bsv.PrivateKey.fromWIF(
+      //         JSON.parse(fundKeys).privateKey
+      //       );
+      //     }
+      //     const utxos = await getUtxos(address);
+      //     const tx = new bsv.Transaction();
+      //     const privateKey = bsv.PrivateKey.fromWIF(priv);
+      //     //use publishKeys for receive keys
+
+      //     const receiveKeysPublicKey = bsv.PublicKey.fromPrivateKey(
+      //       receiveKeysPrivateKey
+      //     );
+      //     const publicKey = bsv.PublicKey.fromPrivateKey(privateKey);
+
+      //     for (let i = 0; i < utxos.length; i++) {
+      //       tx.from({
+      //         txId: utxos[i].tx_hash,
+      //         outputIndex: utxos[i].tx_pos,
+      //         satoshis: utxos[i].value,
+      //         script: bsv.Script.buildPublicKeyHashOut(address),
+      //       });
+      //     }
+      //     const script = new bsv.Script();
+      //     script.add(bsv.Opcode.OP_DUP);
+      //     script.add(bsv.Opcode.OP_HASH160);
+      //     script.add(bsv.Address.fromPublicKey(receiveKeysPublicKey).toBuffer());
+      //     script.add(bsv.Opcode.OP_EQUALVERIFY);
+      //     script.add(bsv.Opcode.OP_CHECKSIG);
+      //     script.add(bsv.Opcode.OP_FALSE);
+      //     script.add(bsv.Opcode.OP_IF);
+      //     script.add(Buffer.from("ord"));
+      //     script.add(bsv.Opcode.OP_1);
+      //     script.add(Buffer.from("image/png"));
+      //     script.add(bsv.Opcode.OP_0);
+      //     // image
+      //     script.add(Buffer.from(imageData));
+      //     script.add(bsv.Opcode.OP_ENDIF);
+      //     tx.addOutput(
+      //       new bsv.Transaction.Output({
+      //         script: script,
+      //         satoshis: 1,
+      //       })
+      //     );
+      //     tx.feePerKb(15);
+      //     // check estimated fee
+      //     const estimatedFee = tx._estimateFee();
+      //     console.log(estimatedFee);
+      //     const totalAvailable = utxos.reduce((a, b) => a + b.value, 0);
+      //     if (estimatedFee > totalAvailable) {
+      //       alert("Fee too high");
+      //       return;
+      //     }
+      //     tx.change(address);
+      //     tx.sign(privateKey);
+      //     //hex
+      //     const hex = tx.toString();
+      //     const broadcast = await fetch(
+      //       "https://api.whatsonchain.com/v1/bsv/main/tx/raw",
+      //       {
+      //         method: "POST",
+      //         headers: {
+      //           "Content-Type": "application/json",
+      //         },
+      //         body: JSON.stringify({
+      //           txhex: hex,
+      //         }),
+      //       }
+      //     );
+      //     const txid = await broadcast.json();
+      //     console.log(txid);
+      //     return txid;
+      //   };
+
+      //publish to blockchain
+      //if user embeds keys, publish to blockchain
+      const publish = async () => {
+        let keys;
+        // check if user wants to use local keys or publish keys
+        if (confirm("Use local keys?")) {
+          keys = localStorage.getItem("keys");
+          console.log(keys, "keys");
+        } else {
+          keys = publishKeys;
+          console.log(keys, "pubkeys");
+        }
+        console.log(keys, "keys", publishKeys, "publishKeys");
+        //if result canvas has image data, publish to blockchain
+        const resultImage = document.getElementById("resultImage");
+        //get image data from src and publish to blockchain
+        const image = resultImage.src;
+        const byteArray = new Uint8Array(
+          atob(image.split(",")[1])
+            .split("")
+            .map(function (c) {
+              return c.charCodeAt(0);
+            })
+        );
+        const txid = await ordinal(byteArray, keys);
+        document.getElementById(
+          "status"
+        ).innerHTML = `Txid: <a href="https://whatsonchain.com/tx/${txid}" target="_blank">${txid}</a>`;
+        // scroll to txid
+        document.getElementById("status").scrollIntoView();
+      };
+
+      let show = false;
+      document.getElementById("showKeys").addEventListener("click", () => {
+        if (show) {
+          document.getElementById("privateKey").style.display = "none";
+          document.getElementById("mnemonic").style.display = "none";
+          document.getElementById("showKeys").innerText = "Show Private Keys";
+          show = false;
+        } else {
+          document.getElementById("privateKey").style.display = "block";
+          document.getElementById("mnemonic").style.display = "block";
+          document.getElementById("showKeys").innerText = "Hide Private Keys";
+          show = true;
+        }
+      });
+
+      //logout
+      document.getElementById("logout").addEventListener("click", () => {
+        if (!confirm("Are you sure you want to logout?")) {
+          return;
+        } else {
+          localStorage.removeItem("keys");
+          localStorage.removeItem("undo");
+          location.reload();
+        }
+      });
+    </script>
+  </body>
+</html>
