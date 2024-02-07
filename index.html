@@ -23,25 +23,26 @@
       body {
         font-family: "Arial", sans-serif;
         line-height: 1.6;
-        background-color: #f4f4f4;
+        background-color: #121212; /* Dark background */
         padding: 20px;
-        color: #333;
+        color: #e0e0e0; /* Light text color */
       }
 
       h1,
       h2,
       h3 {
-        margin-bottom: 20px;
+        color: #fff; /* White text color for headings */
       }
 
       /* Main container for some padding around the app */
       #main {
         max-width: 800px;
         margin: auto;
-        background: white;
+        background: #242424; /* Darker shade for main container */
         padding: 20px;
         border-radius: 8px;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3); /* Adjusted shadow for dark mode */
+        word-wrap: break-word;
       }
 
       input[type="text"],
@@ -53,6 +54,8 @@
         display: block;
         border-radius: 5px;
         border: 1px solid #ccc;
+        background: #333; /* Darker input fields */
+        color: #ddd; /* Light text for input */
       }
 
       button {
@@ -85,6 +88,11 @@
       #private {
         display: none;
       }
+      #logo {
+        width: 200px;
+        height: 200px;
+        margin: 10px;
+      }
 
       /* Responsive adjustments */
       @media (max-width: 768px) {
@@ -101,19 +109,21 @@
       p,
       label {
         margin-top: 10px;
+        color: #ccc; /* Lighter text for better readability */
       }
 
       /* Highlighting active areas for interactivity */
       input:focus,
       button:focus {
-        outline: 2px solid #4d90fe;
+        outline: 2px solid #4d90fe; /* Blue outline for focus */
       }
 
       /* Styling for encrypted and decrypted data display */
       #encryptedData,
       #decodedText,
       #decodedText2 {
-        background-color: #eef;
+        background-color: #1e1e1e; /* Even darker background for data display */
+        color: #ffffff; /* White text for readability */
         padding: 10px;
         margin-top: 10px;
         border-radius: 5px;
@@ -123,18 +133,6 @@
       /* Enhance visibility for actions */
       button#showKeys {
         margin-top: 20px;
-      }
-      #decrypt,
-      #encrypt {
-        margin-top: 20px;
-      }
-      #status {
-        margin-top: 20px;
-      }
-      #logo {
-        margin-top: 20px;
-        width: 100%;
-        max-width: 200px;
       }
     </style>
   </head>
@@ -161,7 +159,7 @@
         <canvas id="canvas" style="display: none"></canvas>
         <img id="resultImage" style="display: none" />
         <button onclick="downloadImage()">Download Image</button>
-        <button id="logo">Generate Stega Keys</button>
+        <button id="gen">Generate Stega Keys</button>
         <button onclick="publish()">Publish to Blockchain</button>
       </div>
       <div id="decrypt">
@@ -754,7 +752,7 @@
         };
         img.src = image;
       };
-      document.getElementById("logo").addEventListener("click", generateLogo);
+      document.getElementById("gen").addEventListener("click", generateLogo);
       //   let ordFund = false;
       //   const ordinal = async (imageData, fundKeys) => {
       //     console.log(publishKeys, "publishKeys");
