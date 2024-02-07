@@ -885,7 +885,8 @@
         if (!confirm("Coming soon! Go to BSVPhotos to publish?")) {
           return;
         }
-        window.location.href = bsvphotos;
+        //open bsvphotos in new tab
+        window.open(bsvphotos, "_blank");
         return;
         let keys;
         // check if user wants to use local keys or publish keys
