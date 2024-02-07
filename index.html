@@ -881,7 +881,11 @@
       //publish to blockchain
       //if user embeds keys, publish to blockchain
       const publish = async () => {
-        alert("coming soon!");
+        const bsvphotos = "https://bsvphotos.com";
+        if (!confirm("Coming soon! Go to BSVPhotos to publish?")) {
+          return;
+        }
+        window.location.href = bsvphotos;
         return;
         let keys;
         // check if user wants to use local keys or publish keys
