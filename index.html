@@ -198,9 +198,6 @@
         <input type="text" id="textToHide" placeholder="Text to hide" />
         <input type="password" id="password" placeholder="Password" />
         <button onclick="embedText()">Embed Text</button>
-        <p id="encryptedData" style="display: none"></p>
-        <canvas id="canvas" style="display: none"></canvas>
-        <img id="resultImage" style="display: none" />
         <button id="download" style="display: none" onclick="downloadImage()">
           Download Image
         </button>
@@ -208,6 +205,9 @@
         <button id="pub" style="display: none" onclick="publish()">
           Publish to Blockchain
         </button>
+        <p id="encryptedData" style="display: none"></p>
+        <canvas id="canvas" style="display: none"></canvas>
+        <img id="resultImage" style="display: none" />
       </div>
       <div id="decrypt">
         <h3>Decode Text</h3>
@@ -501,8 +501,8 @@
           };
           img.src = event.target.result;
           // show download button and publish button
-          document.getElementById("download").style.display = "block";
-          document.getElementById("pub").style.display = "block";
+          document.getElementById("download").style.display = "";
+          document.getElementById("pub").style.display = "";
         };
 
         reader.readAsDataURL(imageInput.files[0]);
