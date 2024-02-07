@@ -420,6 +420,10 @@
               document.getElementById("decodedText").style.display = "block";
               // check if json
               try {
+                // check if json object
+                if (!text.includes("{") && !text.includes("}")) {
+                  return;
+                }
                 const parsedJSON = JSON.parse(text);
                 const addy = parsedJSON.address;
                 const privateKey = parsedJSON.privateKey;
