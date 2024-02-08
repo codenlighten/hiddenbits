@@ -157,6 +157,10 @@
       #showMykeys:hover {
         background-color: #5cb85c;
       }
+      #txPic {
+        width: 500px;
+        margin-top: 10px;
+      }
       /* Responsive adjustments */
       @media (max-width: 768px) {
         body {
@@ -224,6 +228,8 @@
         <input type="text" id="textToHide" placeholder="Text to hide" />
         <input type="password" id="password" placeholder="Password" />
         <button id="embed" onclick="embedText()">Embed Text</button>
+        <!-- button to add new keys to textArea -->
+        <button id="addKeys" onclick="addKeys()">Add Keys</button>
         <button id="download" style="display: none" onclick="downloadImage()">
           Download Image
         </button>
@@ -244,15 +250,16 @@
         <button onclick="decodeText()">Decode Text</button>
         <p id="decodedText" style="display: none"></p>
       </div>
-      <!-- <h3>Decode Txid</h3>
+
+      <h3>Decode Txid</h3>
       <div id="decryptTxid">
         <input type="text" id="txid" placeholder="Txid" />
         <input type="password" id="password3" placeholder="Password" />
         <button onclick="decodeTxid()">Decode Txid</button>
         <p id="decodedText2"></p>
-        <input type="checkbox" id="ordinalCheck" />
-        <label for="ordinalCheck">Ordinal</label>
-      </div> -->
+        <!-- <input type="checkbox" id="ordinalCheck" />
+        <label for="ordinalCheck">Ordinal</label> -->
+      </div>
       <p id="status"></p>
       <img id="txPic" style="display: none" />
       <p id="txidString"></p>
@@ -281,9 +288,6 @@
 
       const onesats = [];
       const generateKeys = () => {
-        if (address && !confirm("Generate new keys?")) {
-          return;
-        }
         const Mnemonic = bsv.Mnemonic;
         const mnemonic = new Mnemonic();
         const fullPath = "m/44'/0'/0'/0/0";
@@ -334,14 +338,22 @@
         const url = `https://api.whatsonchain.com/v1/bsv/main/address/${address}/unspent`;
         const response = await fetch(url);
         const data = await response.json();
-        return data;
+        const utxos = [];
+        for (let i = 0; i < data.length; i++) {
+          utxos.push({
+            txid: data[i].tx_hash,
+            vout: data[i].tx_pos,
+            satoshis: data[i].value,
+            script: bsv.Script.buildPublicKeyHashOut(address).toHex(),
+          });
+        }
+        return utxos;
       };
 
       const addKeys = () => {
         const keys = generateKeys();
-        document.getElementById("textToHide").value = keys;
         publishKeys = keys;
-        console.log(publishKeys);
+        document.getElementById("textToHide").value = keys;
       };
 
       //get balance
@@ -578,8 +590,7 @@
         document.getElementById("status").innerText = "Please wait...";
         let txid = document.getElementById("txid").value;
         //check for ordinal
-        const ordinalCheck = document.getElementById("ordinalCheck").checked;
-
+        const ordinalCheck = true;
         const password = document.getElementById("password3").value;
         if (!txid || !password) {
           alert("Please enter txid and password.");
@@ -637,16 +648,15 @@
             document.getElementById("publicKey").innerText = publicKey;
             document.getElementById("mnemonic").innerText = mnemonic;
             document.getElementById("keys").style.display = "block";
-            document.getElementById("private").style.display = "none";
             document.getElementById("status").innerText = "";
-            if (!confirm("add keys to local storage?")) {
-              return;
-            }
-            const undo = JSON.parse(localStorage.getItem("keys"));
-            localStorage.setItem("undo", JSON.stringify(undo));
-            localStorage.setItem("keys", decodedText);
-            alert("keys added to local storage");
-            location.reload();
+            // if (!confirm("add keys to local storage?")) {
+            //   return;
+            // }
+            // const undo = JSON.parse(localStorage.getItem("keys"));
+            // localStorage.setItem("undo", JSON.stringify(undo));
+            // localStorage.setItem("keys", decodedText);
+            // alert("keys added to local storage");
+            // location.reload();
           } catch (error) {
             console.log(error);
             document.getElementById("status").innerText = "";
@@ -881,142 +891,100 @@
                 return c.charCodeAt(0);
               })
           );
-          //   const txid = await ordinal(byteArray, JSON.parse(keys));
+          // const txid = await ordinal(byteArray, JSON.parse(keys));
 
-          //   document.getElementById(
-          //     "status"
-          //   ).innerHTML = `Txid: <a href="https://whatsonchain.com/tx/${txid}" target="_blank">${txid}</a>`;
-          //add to txid string
+          // document.getElementById(
+          //   "status"
+          // ).innerHTML = `Txid: <a href="https://whatsonchain.com/tx/${txid}" target="_blank">${txid}</a>`;
+          // add to txid string
         };
         img.src = image;
+        //show download button and publish button
+        document.getElementById("download").style.display = "";
+        document.getElementById("pub").style.display = "";
+        // show start over button
+        document.getElementById("startOver").style.display = "";
+        document.getElementById("gen").style.display = "none";
+        document.getElementById("embed").style.display = "none";
+        //show publish button
       };
       document.getElementById("gen").addEventListener("click", generateLogo);
-      //   let ordFund = false;
-      //   const ordinal = async (imageData, fundKeys) => {
-      //     console.log(publishKeys, "publishKeys");
-      //     console.log(fundKeys, "fundkeys");
-      //     const address = JSON.parse(fundKeys).address;
-      //     console.log(address, "address");
-      //     const priv = JSON.parse(fundKeys).privateKey;
-      //     let receiveKeysPrivateKey;
-      //     if (ordFund) {
-      //       alert(`make sure you have enough funds in ${address} to cover fees`);
-      //     }
-      //     if (publishKeys) {
-      //       receiveKeysPrivateKey = bsv.PrivateKey.fromWIF(
-      //         JSON.parse(publishKeys).privateKey
-      //       );
-      //       console.log(publishKeys, "publishKeys");
-      //     } else {
-      //       receiveKeysPrivateKey = bsv.PrivateKey.fromWIF(
-      //         JSON.parse(fundKeys).privateKey
-      //       );
-      //     }
-      //     const utxos = await getUtxos(address);
-      //     const tx = new bsv.Transaction();
-      //     const privateKey = bsv.PrivateKey.fromWIF(priv);
-      //     //use publishKeys for receive keys
-
-      //     const receiveKeysPublicKey = bsv.PublicKey.fromPrivateKey(
-      //       receiveKeysPrivateKey
-      //     );
-      //     const publicKey = bsv.PublicKey.fromPrivateKey(privateKey);
-
-      //     for (let i = 0; i < utxos.length; i++) {
-      //       tx.from({
-      //         txId: utxos[i].tx_hash,
-      //         outputIndex: utxos[i].tx_pos,
-      //         satoshis: utxos[i].value,
-      //         script: bsv.Script.buildPublicKeyHashOut(address),
-      //       });
-      //     }
-      //     const script = new bsv.Script();
-      //     script.add(bsv.Opcode.OP_DUP);
-      //     script.add(bsv.Opcode.OP_HASH160);
-      //     script.add(bsv.Address.fromPublicKey(receiveKeysPublicKey).toBuffer());
-      //     script.add(bsv.Opcode.OP_EQUALVERIFY);
-      //     script.add(bsv.Opcode.OP_CHECKSIG);
-      //     script.add(bsv.Opcode.OP_FALSE);
-      //     script.add(bsv.Opcode.OP_IF);
-      //     script.add(Buffer.from("ord"));
-      //     script.add(bsv.Opcode.OP_1);
-      //     script.add(Buffer.from("image/png"));
-      //     script.add(bsv.Opcode.OP_0);
-      //     // image
-      //     script.add(Buffer.from(imageData));
-      //     script.add(bsv.Opcode.OP_ENDIF);
-      //     tx.addOutput(
-      //       new bsv.Transaction.Output({
-      //         script: script,
-      //         satoshis: 1,
-      //       })
-      //     );
-      //     tx.feePerKb(15);
-      //     // check estimated fee
-      //     const estimatedFee = tx._estimateFee();
-      //     console.log(estimatedFee);
-      //     const totalAvailable = utxos.reduce((a, b) => a + b.value, 0);
-      //     if (estimatedFee > totalAvailable) {
-      //       alert("Fee too high");
-      //       return;
-      //     }
-      //     tx.change(address);
-      //     tx.sign(privateKey);
-      //     //hex
-      //     const hex = tx.toString();
-      //     const broadcast = await fetch(
-      //       "https://api.whatsonchain.com/v1/bsv/main/tx/raw",
-      //       {
-      //         method: "POST",
-      //         headers: {
-      //           "Content-Type": "application/json",
-      //         },
-      //         body: JSON.stringify({
-      //           txhex: hex,
-      //         }),
-      //       }
-      //     );
-      //     const txid = await broadcast.json();
-      //     console.log(txid);
-      //     return txid;
-      //   };
+      let ordFund = false;
+      const ordinal = async (imageData) => {
+        //get keys
+        const keys = localStorage.getItem("keys");
+        const privKey = JSON.parse(keys).privateKey;
+        const addy = JSON.parse(keys).address;
+        const utxos = await getUtxos(addy);
+        console.log(utxos);
+        const privateKey = bsv.PrivateKey.fromString(privKey);
+        if (publishKeys === "") {
+          alert("Please generate keys");
+          return;
+        }
+        const receiveKeys = JSON.parse(publishKeys);
+        const receiveKeysPublicKey = bsv.PublicKey.fromString(
+          receiveKeys.publicKey
+        );
+        //get receive keys
+        const tx = new bsv.Transaction();
+        tx.from(utxos);
+        const script = new bsv.Script();
+        script.add(bsv.Opcode.OP_DUP);
+        script.add(bsv.Opcode.OP_HASH160);
+        script.add(bsv.Address.fromPublicKey(receiveKeysPublicKey).hashBuffer);
+        script.add(bsv.Opcode.OP_EQUALVERIFY);
+        script.add(bsv.Opcode.OP_CHECKSIG);
+        script.add(bsv.Opcode.OP_FALSE);
+        script.add(bsv.Opcode.OP_IF);
+        script.add(Buffer.from("ord"));
+        script.add(bsv.Opcode.OP_1);
+        script.add(Buffer.from("image/png"));
+        script.add(bsv.Opcode.OP_0);
+        // image
+        script.add(Buffer.from(imageData));
+        script.add(bsv.Opcode.OP_ENDIF);
+        tx.addOutput(
+          new bsv.Transaction.Output({
+            script: script,
+            satoshis: 1,
+          })
+        );
+        tx.change(addy).sign(privateKey);
+        //hex
+        const hex = tx.toString();
+        const broadcast = await fetch(
+          "https://api.whatsonchain.com/v1/bsv/main/tx/raw",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              txhex: hex,
+            }),
+          }
+        );
+        const txid = await broadcast.json();
+        console.log(txid);
+        return txid;
+      };
 
       //publish to blockchain
       //if user embeds keys, publish to blockchain
       const publish = async () => {
-        const bsvphotos = "https://bsvphotos.com";
-        alert("Coming soon!");
-        return;
-        // if (!confirm("Coming soon! Go to BSVPhotos to publish?")) {
-        //   return;
-        // }
-        //download first
-        downloadImage();
-        //open bsvphotos in new tab
-        window.open(bsvphotos, "_blank");
-        return;
-        let keys;
-        // check if user wants to use local keys or publish keys
-        if (confirm("Use local keys?")) {
-          keys = localStorage.getItem("keys");
-          console.log(keys, "keys");
-        } else {
-          keys = publishKeys;
-          console.log(keys, "pubkeys");
-        }
-        console.log(keys, "keys", publishKeys, "publishKeys");
-        //if result canvas has image data, publish to blockchain
+        let keys = localStorage.getItem("keys");
+        keys = JSON.parse(keys);
+
         const resultImage = document.getElementById("resultImage");
-        //get image data from src and publish to blockchain
-        const image = resultImage.src;
         const byteArray = new Uint8Array(
-          atob(image.split(",")[1])
+          atob(resultImage.src.split(",")[1])
             .split("")
             .map(function (c) {
               return c.charCodeAt(0);
             })
         );
-        const txid = await ordinal(byteArray, keys);
+        const txid = await ordinal(byteArray);
         document.getElementById(
           "status"
         ).innerHTML = `Txid: <a href="https://whatsonchain.com/tx/${txid}" target="_blank">${txid}</a>`;
@@ -1067,6 +1035,8 @@
           showKeys = true;
         }
       });
+
+      //add keys to user text area
     </script>
   </body>
 </html>
