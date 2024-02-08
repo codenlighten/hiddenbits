@@ -710,17 +710,13 @@
         document.getElementById("decryptTxid").style.display = "none";
       }
       function showDecryptTxid() {
-        // alert("coming soon");
-        // return;
         document.getElementById("encrypt").style.display = "none";
         document.getElementById("decrypt").style.display = "none";
         document.getElementById("decryptTxid").style.display = "block";
-        document.getElementById("ordinalCheck").checked = true;
       }
       // check url params for txid
       const urlParams = new URLSearchParams(window.location.search);
       const txid = urlParams.get("txid");
-
       const keysUrl = urlParams.get("keys");
       if (keysUrl) {
         //open encrypt
