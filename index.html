@@ -277,6 +277,16 @@
       <p>&copy; 2024 HiddenBits.</p>
     </div>
     <script>
+      //clear all inputs
+      const clearInputs = () => {
+        document.getElementById("textToHide").value = "";
+        document.getElementById("password").value = "";
+        document.getElementById("password2").value = "";
+        document.getElementById("password3").value = "";
+        document.getElementById("txid").value = "";
+        document.getElementById("mnemonicString").value = "";
+      };
+      clearInputs();
       const Buffer = bsv.deps.Buffer;
       let address = "";
       let publishKeys = "";
