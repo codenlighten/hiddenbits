@@ -930,11 +930,12 @@
         const utxos = await getUtxos(addy);
         console.log(utxos);
         const privateKey = bsv.PrivateKey.fromString(privKey);
-        // if (publishKeys === "") {
-        //   alert("Please generate keys");
-        //   return;
-        // }
-        const receiveKeys = JSON.parse(publishKeys);
+        let receiveKeys;
+        if (publishKeys === "") {
+         receiveKeys = JSON.parse(keys);
+        }else{
+         receiveKeys = JSON.parse(publishKeys);
+        }
         const receiveKeysPublicKey = bsv.PublicKey.fromString(
           receiveKeys.publicKey
         );
